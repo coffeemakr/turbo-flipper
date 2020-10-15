@@ -24,3 +24,40 @@ Warming up...
 ```
 
 ## Scripting
+
+```py
+# add flip.py location to the path or simply copy paste the content 
+import sys
+sys.path.insert(0, '.')
+
+# import what you need
+from flip import Template, Base64
+
+def generate(decoded_value):
+    '''
+    my maniplation function. If you perform transformations, 
+    you will receive the decoded base value as the first parameter.
+    '''
+    for i in range(10):
+        yield decoded_value + str(i)
+
+def queueRequests(target, wordlists):
+    value = target.baseInput.encode('utf-8')
+
+    generator = Template(value, generate, transformations=[Base64()])
+
+    engine = RequestEngine(endpoint=target.endpoint,
+                           concurrentConnections=10,
+                           requestsPerConnection=1,
+                           pipeline=False
+                           )
+    
+    engine.queue(target.req, value)
+    
+    for req in generator:
+        engine.queue(target.req, req)
+
+    
+def handleResponse(req, interesting):
+    table.add(req)
+```
